@@ -2,23 +2,37 @@ const express = require("express");
 const router = express.Router();
 const CVE = require("../models/CVEschema"); 
 const axios = require("axios");
-
 async function fetchDataFromAPI(startIndex, pageSize) {
-  const apiUrl = `https://services.nvd.nist.gov/rest/json/cves/2.0?startIndex=${startIndex}&resultsPerPage=${pageSize}`;
+  const allCVEs = [];
 
   try {
-    const response = await axios.get(apiUrl);
-    return response.data.vulnerabilities.filter((vulnerability) =>
-      vulnerability.hasOwnProperty("cve")
-    );
+    let cveVulnerabilities = [];
+    let totalRecords = 0;
+
+    do {
+      const apiUrl = `https://services.nvd.nist.gov/rest/json/cves/2.0?startIndex=${startIndex}&resultsPerPage=${pageSize}`;
+
+      const response = await axios.get(apiUrl);
+      cveVulnerabilities = response.data.vulnerabilities.filter((vulnerability) =>
+        vulnerability.hasOwnProperty("cve")
+      );
+      allCVEs.push(...cveVulnerabilities);
+
+      totalRecords += cveVulnerabilities.length;
+      startIndex += pageSize;
+    } while (cveVulnerabilities.length === pageSize);
+
+    console.log("Total records fetched:", totalRecords);
+    return allCVEs;
   } catch (error) {
     console.error("Error fetching data from API:", error);
     return [];
   }
 }
 
+
 router.get("/insert-cves", async (req, res) => {
-  const pageSize = 100;
+  const pageSize = 1000;
   let startIndex = 0;
   let allCVEs = [];
 
