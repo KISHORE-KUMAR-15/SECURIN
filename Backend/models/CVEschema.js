@@ -64,6 +64,6 @@ const cveSchema = new mongoose.Schema({
   ],
 });
 
-const CVE = mongoose.model("CVENew", cveSchema);
+const CVE = mongoose.model("CVENew", cveSchema); 
 
 module.exports = CVE;
